@@ -1,0 +1,897 @@
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta content="width=device-width, initial-scale=1" name="viewport" />
+    <title>Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins&amp;display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .table-responsive {
+            margin-top: 20px;
+        }
+
+        .action-icons {
+            font-size: 1.2rem;
+            margin: 0 5px;
+        }
+
+        .add-btn-container {
+            margin-bottom: 20px;
+        }
+
+        .fa-spin {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        button:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+
+        .disableable {
+            transition: opacity 0.3s ease;
+        }
+
+        .pointer-events-none {
+            pointer-events: none;
+        }
+
+        .opacity-50 {
+            opacity: 0.5;
+        }
+
+        #sharesChartContainer {
+            position: relative;
+            height: 300px;
+        }
+
+        .no-selection-message {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 100%;
+            text-align: center;
+            color: #9CA3AF;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 min-h-screen flex flex-col justify-between">
+    <!-- Page d'accueil -->
+    <div id="home-page" class="page active">
+        <div class="p-5 pt-6">
+            <header class="flex justify-between items-center mb-6">
+                <h1 class="text-black text-2xl font-normal">Dashboard</h1>
+            </header>
+            <section class="grid grid-cols-1 gap-4 mb-6">
+                <div class="bg-black rounded-xl p-4 text-white">
+                    <div id="eventsCountTotal" class="text-xl font-semibold">-</div>
+                    <div id="eventsCountTotalLib" class="text-sm font-light mb-3"></div>
+                </div>
+            </section>
+
+            <section class="grid grid-cols-2 gap-4 mb-6">
+                <div class="bg-white rounded-xl p-4 text-black">
+                    <div id="userCountTotal" class="text-xl font-semibold">-</div>
+                    <div id="userCountTotalLib" class="text-sm font-light mb-3"></div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-black">
+                    <div id="totalConnections" class="text-xl font-semibold">-</div>
+                    <div class="text-sm font-light text-gray-500 mb-3">Connexion(s)</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-black">
+                    <div id="totalShares" class="text-xl font-semibold">-</div>
+                    <div class="text-sm font-light text-gray-500 mb-3">Partage(s)</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-black">
+                    <div id="totalAnomalies" class="text-xl font-semibold">-</div>
+                    <div class="text-sm font-light text-gray-500 mb-3">Anomalie(s)</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Page des statistiques -->
+    <div id="statistiques-page" class="page">
+        <div class="p-5 pt-6">
+            <header class="flex justify-between items-center mb-6">
+                <h1 class="text-black text-2xl font-normal">Statistiques par événement</h1>
+            </header>
+            <div class="mb-4">
+                <select id="eventSelect" class="w-full p-2 border border-gray-300 rounded-md">
+                    <option value="" disabled selected>Chargement des événements...</option>
+                </select>
+            </div>
+
+            <section class="grid grid-cols-2 gap-4 mb-6" id="indicatorsContainer">
+                <div class="bg-white rounded-xl p-4 text-black">
+                    <div id="total-photos" class="text-xl font-semibold">-</div>
+                    <div class="text-sm font-light text-gray-500 mb-3">Photo(s)</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-black">
+                    <div id="eventConnections" class="text-xl font-semibold">-</div>
+                    <div class="text-sm font-light text-gray-500 mb-3">Connexion(s)</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-black">
+                    <div id="eventShares" class="text-xl font-semibold">-</div>
+                    <div class="text-sm font-light text-gray-500 mb-3">Partage(s)</div>
+                </div>
+                <div class="bg-white rounded-xl p-4 text-black">
+                    <div id="eventAnomalies" class="text-xl font-semibold">-</div>
+                    <div class="text-sm font-light text-gray-500 mb-3">Anomalie(s)</div>
+                </div>
+            </section>
+
+            <!-- Dans la section du graphique, remplacez par ce code -->
+            <section class="disableable" id="chartSection">
+                <div class="bg-white rounded-xl p-4 shadow-sm">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="text-lg font-medium">Activité par quart d'heure</h3>
+                        <button id="refreshChartBtn"
+                            class="p-2 text-black bg-gray-100 rounded-md hover:bg-gray-200 transition">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-4 shadow">
+                        <div id="chart-error" class="text-red-500 mb-2"></div>
+                        <div id="sharesChartContainer" style="height: 300px; position: relative;">
+                            <canvas id="sharesChart" height="300"></canvas>
+                        </div>
+
+                        <div class="mt-4">
+                            <div class="stat-card">
+                                <span class="font-medium">Total photos traitées:</span>
+                                <span id="total-photos" class="font-bold">0</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <!-- Page des événements -->
+    <div id="events-page" class="page">
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Gestion des événements</h2>
+
+            <div class="mb-6">
+                <button id="add-event-btn"
+                    class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-md transition duration-200">
+                    <i class="fas fa-plus mr-2"></i>AJOUTER
+                </button>
+            </div>
+
+            <div class="overflow-x-auto bg-white rounded-lg shadow">
+                <table class="min-w-full divide-y divide-gray-200">
+                    <thead class="bg-gray-800">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">
+                                Actions</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
+                                style="display: none;">ID</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Nom
+                            </th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Date
+                                début</th>
+                            <th class="px-6 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Lieu
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="listeEvents" class="bg-white divide-y divide-gray-200"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page d'ajout d'événement -->
+    <div id="add-event-page" class="page">
+        <div class="container mx-auto px-4 py-8 max-w-6xl">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Ajouter un nouvel événement</h2>
+
+            <div class="bg-white rounded-lg shadow p-6">
+                <form id="event-form" class="space-y-4">
+                    <div>
+                        <label for="event-name" class="block text-sm font-medium text-gray-700">Nom de
+                            l'événement</label>
+                        <input type="text" id="event-name" name="name" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label for="start-date" class="block text-sm font-medium text-gray-700">Date de
+                                début</label>
+                            <input type="date" id="start-date" name="start_date" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                        </div>
+
+                        <div>
+                            <label for="location" class="block text-sm font-medium text-gray-700">Lieu</label>
+                            <input type="text" id="location" name="location" required
+                                class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="code" class="block text-sm font-medium text-gray-700">Code de l'événement</label>
+                        <input type="text" id="code" name="code" required
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 p-2 border">
+                    </div>
+
+                    <div class="flex justify-end space-x-4 pt-4">
+                        <button type="button" id="cancel-add-event"
+                            class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Annuler
+                        </button>
+                        <button type="submit"
+                            class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                            Enregistrer
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav
+        class="bg-white border-t border-gray-300 flex justify-around items-center py-3 fixed bottom-0 left-0 w-full rounded-t-3xl">
+        <button id="home-btn" class="flex flex-col items-center text-black text-xs font-semibold">
+            <i class="fas fa-th-large text-lg mb-1"></i> Home
+        </button>
+        <button id="statistiques-btn" class="flex flex-col items-center text-gray-500 text-xs font-normal">
+            <i class="fas fa-chart-bar text-lg mb-1"></i> Statistiques
+        </button>
+        <button id="events-btn" class="flex flex-col items-center text-gray-500 text-xs font-normal">
+            <i class="fas fa-list-alt text-lg mb-1"></i> Evénements
+        </button>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Variables globales
+            let currentEventId = null;
+            let chartInstance = null;
+            let eventsData = [];
+
+            // Initialisation
+            initNavigation();
+            initEventForm();
+            loadInitialData();
+
+            // Fonctions d'initialisation
+            function initNavigation() {
+                const navButtons = {
+                    'home-btn': 'home-page',
+                    'statistiques-btn': 'statistiques-page',
+                    'events-btn': 'events-page'
+                };
+
+                Object.entries(navButtons).forEach(([btnId, pageId]) => {
+                    document.getElementById(btnId).addEventListener('click', () => showPage(pageId));
+                });
+
+                document.getElementById('add-event-btn').addEventListener('click', () => showPage('add-event-page'));
+                document.getElementById('cancel-add-event').addEventListener('click', () => showPage('events-page'));
+                document.getElementById('refreshChartBtn').addEventListener('click', refreshChart);
+            }
+
+            function initEventForm() {
+                const codeInput = document.getElementById('code');
+                codeInput.addEventListener('input', function (e) {
+                    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    if (this.value.length > 10) {
+                        this.value = this.value.substring(0, 10);
+                    }
+                });
+
+                document.getElementById('event-form').addEventListener('submit', async function (e) {
+                    e.preventDefault();
+                    await submitEventForm();
+                });
+            }
+
+            async function loadInitialData() {
+                console.log("Début du chargement initial");
+                try {
+                    toggleUIState(true);
+                    console.log("Chargement des détails d'événement...");
+                    await loadEventDetails();
+                    console.log("Chargement de la liste des événements...");
+                    await loadEvents();
+                    console.log("Affichage des événements...");
+                    await loadAndDisplayEvents();
+                    console.log("Chargement initial terminé");
+                } catch (error) {
+                    console.error("Erreur lors du chargement initial:", error);
+                } finally {
+                    toggleUIState(false);
+                }
+            }
+
+            // Fonctions principales
+            function showPage(pageId) {
+                document.querySelectorAll('.page').forEach(page => page.classList.remove('active'));
+                document.getElementById(pageId).classList.add('active');
+
+                // Mettre à jour l'état des boutons de navigation
+                const navItems = {
+                    'home-btn': pageId === 'home-page',
+                    'statistiques-btn': pageId === 'statistiques-page',
+                    'events-btn': pageId === 'events-page'
+                };
+
+                Object.entries(navItems).forEach(([btnId, isActive]) => {
+                    const btn = document.getElementById(btnId);
+                    btn.classList.toggle('text-black', isActive);
+                    btn.classList.toggle('text-gray-500', !isActive);
+                    btn.classList.toggle('font-semibold', isActive);
+                    btn.classList.toggle('font-normal', !isActive);
+                });
+
+                // Actions spécifiques à la page
+                if (pageId === 'events-page') {
+                    loadAndDisplayEvents();
+                } else if (pageId === 'add-event-page') {
+                    document.getElementById('event-form').reset();
+                }
+            }
+
+            async function loadEventDetails() {
+                try {
+                    const response = await fetch('https://www.so-box.fr/webapp/assets/php/get_event_data.php');
+                    if (!response.ok) throw new Error('Erreur réseau');
+
+                    const data = await response.json();
+                    if (data.status !== 'SUCCES') throw new Error(data.message || 'Erreur serveur');
+
+                    await updateDashboardCounters(data);
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert(`Erreur: ${error.message}`);
+                }
+            }
+
+            async function updateDashboardCounters(data) {
+                try {
+                    // Vérifier que data existe et a les propriétés attendues
+                    if (!data || typeof data !== 'object') {
+                        console.error('Données invalides reçues:', data);
+                        return;
+                    }
+
+                    // Fonction utilitaire pour mettre à jour un élément en toute sécurité
+                    function safeUpdateElement(id, value, defaultValue = '-') {
+                        const element = document.getElementById(id);
+                        if (element) {
+                            element.textContent = value !== undefined ? value : defaultValue;
+                        } else {
+                            console.warn(`Élément #${id} non trouvé dans le DOM`);
+                        }
+                    }
+
+                    // Mettre à jour les compteurs
+                    safeUpdateElement('eventsCountTotal', data.events);
+                    safeUpdateElement('eventsCountTotalLib', data.events === 0 ? 'Evénement' : 'Evénements');
+                    safeUpdateElement('userCountTotal', data.users);
+                    safeUpdateElement('userCountTotalLib', data.users === 0 ? 'Utilisateur' : 'Utilisateurs');
+
+                    // Mettre à jour les autres compteurs si nécessaire
+                    safeUpdateElement('totalConnections', data.connections);
+                    safeUpdateElement('totalShares', data.shares);
+                    safeUpdateElement('totalAnomalies', data.anomalies);
+
+                } catch (error) {
+                    console.error('Erreur dans updateDashboardCounters:', error);
+                }
+            }
+
+            // Fonction helper réutilisable
+            function safeUpdateSelect(selectId, options, defaultText = 'Sélectionnez un événement') {
+                const select = document.getElementById(selectId);
+                if (!select) {
+                    console.warn(`Element #${selectId} non trouvé`);
+                    return false;
+                }
+
+                try {
+                    // Sauvegarder la valeur sélectionnée actuelle
+                    const currentValue = select.value;
+
+                    // Réinitialiser le select
+                    select.innerHTML = '';
+
+                    // Ajouter l'option par défaut
+                    const defaultOption = new Option(defaultText, '', true, true);
+                    defaultOption.disabled = true;
+                    defaultOption.selected = true;
+                    select.add(defaultOption);
+
+                    // Ajouter les options dynamiques
+                    if (options && options.length > 0) {
+                        options.forEach(option => {
+                            const newOption = new Option(
+                                option.text || option.nom,
+                                option.value || option.id,
+                                false,
+                                currentValue === (option.value || option.id)
+                            );
+                            select.add(newOption);
+                        });
+                        select.disabled = false;
+                    } else {
+                        const emptyOption = new Option('Aucun événement disponible', '', true, true);
+                        emptyOption.disabled = true;
+                        select.add(emptyOption);
+                        select.disabled = true;
+                    }
+
+                    return true;
+                } catch (error) {
+                    console.error(`Erreur lors de la mise à jour de #${selectId}:`, error);
+                    return false;
+                }
+            }
+
+            // Version modifiée de loadEvents()
+            async function loadEvents() {
+                try {
+                    // Afficher l'état de chargement
+                    safeUpdateSelect('eventSelect', [], 'Chargement des événements...');
+
+                    // Récupérer les données
+                    const response = await fetch("https://www.so-box.fr/webapp/assets/php/list_events.php");
+                    if (!response.ok) throw new Error("Erreur réseau");
+
+                    const data = await response.json();
+                    if (!data.data) throw new Error("Format de données invalide");
+
+                    // Formater les options
+                    const eventOptions = data.data.map(event => ({
+                        id: event.id,
+                        nom: `${event.nom} (${formatDate(event.dateDebut)})`,
+                        text: `${event.nom} (${formatDate(event.dateDebut)})` // Alternative si vous préférez
+                    }));
+
+                    // Mettre à jour le select
+                    const success = safeUpdateSelect('eventSelect', eventOptions);
+
+                    if (success && eventOptions.length > 0) {
+                        eventsData = data.data;
+                        document.getElementById('eventSelect').addEventListener('change', handleEventSelectChange);
+                    }
+
+                } catch (error) {
+                    console.error("Erreur lors du chargement des événements:", error);
+                    safeUpdateSelect('eventSelect', [], 'Erreur de chargement');
+                }
+            }
+
+            // Gestionnaire d'événement séparé
+            async function handleEventSelectChange(e) {
+                if (e.target.value) {
+                    await loadEventData(e.target.value);
+                    toggleUIState(false);
+                } else {
+                    toggleUIState(true);
+                }
+            }
+
+            // Fonction utilitaire pour formater la date
+            function formatDate(dateString) {
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                return new Date(dateString).toLocaleDateString('fr-FR', options);
+            }
+
+            async function loadAndDisplayEvents() {
+                try {
+                    // 1. Vérifier que le tbody existe
+                    const tbody = document.getElementById('listeEvents');
+                    if (!tbody) {
+                        console.error("Élément #listeEvents non trouvé");
+                        return;
+                    }
+
+                    // 2. Afficher un état de chargement
+                    tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Chargement des événements...</td></tr>';
+
+                    // 3. Récupérer les données
+                    const response = await fetch("https://www.so-box.fr/webapp/assets/php/list_events.php");
+                    if (!response.ok) throw new Error("Erreur réseau: " + response.status);
+
+                    const data = await response.json();
+                    if (!data.status) throw new Error(data.message || 'Réponse inattendue du serveur');
+                    if (!Array.isArray(data.data)) throw new Error('Format de données invalide');
+
+                    // 4. Vérifier si des données existent
+                    if (data.data.length === 0) {
+                        tbody.innerHTML = '<tr><td colspan="5" class="text-center py-4">Aucun événement trouvé</td></tr>';
+                        return;
+                    }
+
+                    // 5. Construire le tableau de manière sécurisée
+                    const fragment = document.createDocumentFragment();
+
+                    data.data.forEach(event => {
+                        try {
+                            const row = document.createElement('tr');
+                            row.className = 'hover:bg-gray-50';
+
+                            // ID (caché)
+                            const idCell = createTableCell(event.id || '', 'px-6 py-4 whitespace-nowrap text-sm text-gray-500', true);
+                            row.appendChild(idCell);
+
+                            // Actions
+                            const actionsCell = document.createElement('td');
+                            actionsCell.className = 'px-6 py-4 whitespace-nowrap text-sm text-gray-500';
+
+                            // Bouton Éditer
+                            const editBtn = createActionButton(
+                                'text-blue-600 hover:text-blue-900 mr-3',
+                                'Éditer',
+                                '<i class="fas fa-edit"></i>',
+                                () => editEvent(event.id)
+                            );
+                            actionsCell.appendChild(editBtn);
+
+                            // Bouton Supprimer
+                            const deleteBtn = createActionButton(
+                                'text-red-600 hover:text-red-900',
+                                'Supprimer',
+                                '<i class="fas fa-trash-alt"></i>',
+                                () => deleteEvent(event.id)
+                            );
+                            actionsCell.appendChild(deleteBtn);
+
+                            row.appendChild(actionsCell);
+
+                            // Nom
+                            const nameCell = createTableCell(event.nom || '', 'px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900');
+                            row.appendChild(nameCell);
+
+                            // Date de début
+                            const dateText = event.dateDebut ? formatDate(event.dateDebut) : '';
+                            const startDateCell = createTableCell(dateText, 'px-6 py-4 whitespace-nowrap text-sm text-gray-500');
+                            row.appendChild(startDateCell);
+
+                            // Lieu
+                            const locationCell = createTableCell(event.lieu || '', 'px-6 py-4 whitespace-nowrap text-sm text-gray-500');
+                            row.appendChild(locationCell);
+
+                            fragment.appendChild(row);
+                        } catch (error) {
+                            console.error("Erreur lors de la création de la ligne pour l'événement:", event, error);
+                        }
+                    });
+
+                    // 6. Mettre à jour le DOM en une seule opération
+                    tbody.innerHTML = '';
+                    tbody.appendChild(fragment);
+
+                } catch (error) {
+                    console.error('Erreur lors du chargement des événements:', error);
+
+                    const tbody = document.getElementById('listeEvents');
+                    if (tbody) {
+                        const errorMessage = error.message.includes('événement(s) trouvé(s)')
+                            ? error.message
+                            : 'Erreur lors du chargement des événements';
+
+                        tbody.innerHTML = `
+                <tr>
+                    <td colspan="5" class="text-center py-4 text-red-500">
+                        ${errorMessage}
+                    </td>
+                </tr>
+            `;
+                    }
+
+                    // Afficher une alerte seulement si c'est vraiment nécessaire
+                    if (!error.message.includes('événement(s) trouvé(s)')) {
+                        showToast(error.message, 'error');
+                    }
+                }
+            }
+
+            // Fonctions helper
+            function createTableCell(text, className, hidden = false) {
+                const cell = document.createElement('td');
+                cell.className = className;
+                cell.textContent = text;
+                if (hidden) cell.style.display = 'none';
+                return cell;
+            }
+
+            function createActionButton(className, title, iconHtml, onClickHandler) {
+                const button = document.createElement('button');
+                button.className = className;
+                button.title = title;
+                button.innerHTML = iconHtml;
+                button.onclick = onClickHandler;
+                return button;
+            }
+
+            function showToast(message, type = 'error') {
+                // Implémentez votre système de notification/toast ici
+                console[type](message);
+            }
+
+            async function loadEventData(eventId) {
+                try {
+                    currentEventId = eventId;
+                    showLoading(true);
+                    document.getElementById('chart-error').textContent = '';
+
+                    const response = await fetch(`https://www.so-box.fr/webapp/assets/php/stat.php?event_id=${eventId}`);
+                    if (!response.ok) throw new Error('Erreur réseau');
+
+                    const data = await response.json();
+                    if (data.error) throw new Error(data.error);
+
+                    if (!data.time_slots || data.time_slots.length === 0) {
+                        throw new Error('Aucune donnée disponible pour cet événement');
+                    }
+
+                    // Trouver l'événement correspondant pour les métadonnées
+                    // const event = eventsData.find(e => e.id == eventId);
+                    // if (event) {
+                    //     document.getElementById('userCountEvent').textContent = '...'; // À remplacer par les vraies données
+                    // }
+
+                    updateChart(data);
+                    updateStats(data.stats || {
+                        total_photos: data.time_slots.reduce((sum, slot) => sum + (slot.total_photos || 0), 0),
+                        total_time_slots: data.time_slots.length,
+                        average_per_slot: data.time_slots.length ?
+                            Math.round(data.time_slots.reduce((sum, slot) => sum + (slot.total_photos || 0), 0) / data.time_slots.length * 100) / 100 : 0
+                    });
+
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    document.getElementById('chart-error').textContent = error.message;
+                    toggleUIState(true);
+                } finally {
+                    showLoading(false);
+                }
+            }
+
+            function updateChart(data) {
+                // Vérifier d'abord si la section est visible
+                const chartSection = document.getElementById('chartSection');
+                if (!chartSection || window.getComputedStyle(chartSection).display === 'none') {
+                    console.log('La section du graphique n\'est pas visible');
+                    return;
+                }
+
+                // Obtenir le canvas
+                const canvas = document.getElementById('sharesChart');
+                if (!canvas) {
+                    console.error('Canvas element not found');
+                    return;
+                }
+
+                // Détruire l'ancien graphique s'il existe
+                if (chartInstance) {
+                    chartInstance.destroy();
+                }
+
+                // Préparer les données
+                const labels = data.time_slots.map(slot => {
+                    const date = new Date(slot.time_slot);
+                    return date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+                });
+
+                const photosData = data.time_slots.map(slot => slot.total_photos);
+
+                // Créer le nouveau graphique
+                const ctx = canvas.getContext('2d');
+                chartInstance = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Photos traitées',
+                            data: photosData,
+                            backgroundColor: 'rgba(79, 70, 229, 0.7)',
+                            borderColor: 'rgba(79, 70, 229, 1)',
+                            borderWidth: 1,
+                            borderRadius: 6
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            tooltip: {
+                                callbacks: {
+                                    title: (context) => `Créneau: ${context[0].label}`,
+                                    label: (context) => `${context.dataset.label}: ${context.raw}`
+                                }
+                            }
+                        },
+                        scales: {
+                            y: {
+                                beginAtZero: true,
+                                title: {
+                                    display: true,
+                                    text: 'Nombre de photos',
+                                    font: { weight: 'bold' }
+                                }
+                            },
+                            x: {
+                                title: {
+                                    display: true,
+                                    text: 'Heure de traitement',
+                                    font: { weight: 'bold' }
+                                }
+                            }
+                        }
+                    }
+                });
+            }
+
+            function updateStats(stats) {
+                document.getElementById('total-photos').textContent = stats.total_photos.toLocaleString();
+            }
+
+            function refreshChart() {
+                if (currentEventId) {
+                    loadEventData(currentEventId);
+                }
+            }
+
+            function showLoading(loading) {
+                const btn = document.getElementById('refreshChartBtn');
+                if (loading) {
+                    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>';
+                    btn.disabled = true;
+                } else {
+                    btn.innerHTML = '<i class="fas fa-sync-alt"></i>';
+                    btn.disabled = false;
+                }
+            }
+
+            function toggleUIState(disabled) {
+                const disableableElements = document.querySelectorAll('.disableable');
+                const statsContainer = document.getElementById('indicatorsContainer');
+                const chartSection = document.getElementById('chartSection');
+                const chartContainer = document.getElementById('sharesChartContainer');
+
+                if (disabled) {
+                    // État désactivé
+                    disableableElements.forEach(el => {
+                        el.classList.add('opacity-50', 'pointer-events-none');
+                    });
+
+                    if (statsContainer) statsContainer.classList.add('opacity-50', 'pointer-events-none');
+                    if (chartSection) chartSection.classList.add('opacity-50', 'pointer-events-none');
+
+                    // Détruire le graphique existant
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                        chartInstance = null;
+                    }
+
+                    // Message d'information
+                    //         if (chartContainer) {
+                    //             chartContainer.innerHTML = `
+                    //     <div class="no-selection-message">
+                    //         <i class="fas fa-chart-pie text-4xl text-gray-300 mb-2"></i>
+                    //         <p class="text-gray-500">Sélectionnez un événement pour afficher les données</p>
+                    //     </div>
+                    //     <canvas id="sharesChart" height="300" style="display: none;"></canvas>
+                    // `;
+                    //         }
+                } else {
+                    // État activé
+                    disableableElements.forEach(el => {
+                        el.classList.remove('opacity-50', 'pointer-events-none');
+                    });
+
+                    if (statsContainer) statsContainer.classList.remove('opacity-50', 'pointer-events-none');
+                    if (chartSection) chartSection.classList.remove('opacity-50', 'pointer-events-none');
+
+                    // Réafficher le canvas si nécessaire
+                    const canvas = document.getElementById('sharesChart');
+                    if (canvas) {
+                        canvas.style.display = 'block';
+                    }
+                }
+            }
+
+            async function submitEventForm() {
+                const codeInput = document.getElementById('code');
+                const codeValue = codeInput.value.toUpperCase();
+
+                if (!validateCode(codeValue)) {
+                    alert('Le code doit contenir entre 1 et 10 caractères alphanumériques en majuscules');
+                    return;
+                }
+
+                const formData = {
+                    nom: document.getElementById('event-name').value,
+                    dateDebut: document.getElementById('start-date').value,
+                    code: codeValue,
+                    lieu: document.getElementById('location').value
+                };
+
+                try {
+                    const response = await fetch('https://www.so-box.fr/webapp/assets/php/add_event.php', {
+                        method: 'POST',
+                        headers: { 'Accept': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        alert('Événement ajouté avec succès!');
+                        showPage('events-page');
+                        loadAndDisplayEvents();
+                    } else {
+                        throw new Error(data.message || 'Erreur lors de l\'ajout de l\'événement');
+                    }
+                } catch (error) {
+                    console.error('Erreur:', error);
+                    alert('Erreur: ' + error.message);
+                }
+            }
+
+            function validateCode(code) {
+                return code.length > 0 && code.length <= 10 && /^[A-Z0-9]+$/.test(code);
+            }
+
+            function formatDate(dateString) {
+                const options = { day: '2-digit', month: '2-digit', year: 'numeric' };
+                return new Date(dateString).toLocaleDateString('fr-FR', options);
+            }
+
+            function editEvent(eventId) {
+                console.log('Édition de l\'événement', eventId);
+                // Implémentez votre logique d'édition ici
+            }
+
+            function deleteEvent(eventId) {
+                if (confirm('Êtes-vous sûr de vouloir supprimer cet événement ?')) {
+                    console.log('Suppression de l\'événement', eventId);
+                    // Implémentez votre logique de suppression ici
+                }
+            }
+        });
+    </script>
+</body>
+
+</html>

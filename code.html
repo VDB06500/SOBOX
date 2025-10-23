@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Commande de tirages photo</title>
+<style>
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f5f7fa;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+  }
+  h1 {
+    text-align: center;
+    margin-bottom: 30px;
+    color: #2c3e50;
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+    background: white;
+    padding: 30px 30px 40px 30px;
+    border-radius: 10px;
+    box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  }
+  /* Tabs container */
+  .tabs {
+    display: flex;
+    justify-content: center;
+    border-bottom: 2px solid #2980b9;
+    margin-bottom: 20px;
+    user-select: none;
+  }
+  .tab {
+    padding: 12px 28px;
+    cursor: pointer;
+    font-weight: 700;
+    font-size: 1.1rem;
+    color: #2980b9;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    background: #e9f0fb;
+    margin: 0 5px;
+    transition: background-color 0.3s ease, color 0.3s ease;
+  }
+  .tab.active {
+    background: white;
+    color: #1c5980;
+    box-shadow: 0 -2px 8px rgba(41,128,185,0.4);
+    border-bottom: 2px solid white;
+  }
+
+  /* Sections (tabs content) */
+  .section {
+    display: none;
+  }
+  .section.active {
+    display: block;
+  }
+  .section h2 {
+    color: #34495e;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #2980b9;
+    padding-bottom: 6px;
+  }
+  .thumbnails {
+    display: flex;
+    gap: 20px;
+    overflow-x: auto;
+    padding-bottom: 10px;
+    margin-bottom: 10px;
+  }
+  .thumbnail-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    min-width: 110px;
+  }
+  .thumbnail {
+    width: 100px;
+    height: 150px;
+    border-radius: 6px;
+    object-fit: cover;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.18);
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+  .thumbnail:hover {
+    transform: scale(1.1);
+  }
+  .quantity-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .quantity-controls button {
+    width: 28px;
+    height: 28px;
+    border: none;
+    background-color: #2980b9;
+    color: white;
+    font-size: 20px;
+    border-radius: 50%;
+    line-height: 0;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  .quantity-controls button:active {
+    background-color: #1c5980;
+  }
+  .quantity-controls button:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+  }
+  .quantity-display {
+    min-width: 30px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 1rem;
+    color: #2c3e50;
+    user-select: none;
+  }
+  .total {
+    font-size: 1.25rem;
+    font-weight: 700;
+    text-align: right;
+    color: #27ae60;
+    margin-top: 20px;
+  }
+  button#validateBtn {
+    display: block;
+    margin: 30px auto 0 auto;
+    background-color: #2980b9;
+    color: white;
+    border: none;
+    padding: 15px 45px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 0 6px 10px rgba(41,128,185,0.5);
+  }
+  button#validateBtn:hover {
+    background-color: #1c5980;
+  }
+  /* Scrollbar styling for thumbnails */
+  .thumbnails::-webkit-scrollbar {
+    height: 8px;
+  }
+  .thumbnails::-webkit-scrollbar-track {
+    background: #eee;
+    border-radius: 10px;
+  }
+  .thumbnails::-webkit-scrollbar-thumb {
+    background-color: #2980b9;
+    border-radius: 10px;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <h1>Commande de tirages photo</h1>
+
+    <div class="tabs" role="tablist" aria-label="Choisir la taille des photos">
+      <div class="tab active" role="tab" tabindex="0" aria-selected="true" aria-controls="section-10x15" id="tab-10x15" data-size="10x15" data-price="0.50">
+        10x15 cm (€0,50)
+      </div>
+      <div class="tab" role="tab" tabindex="-1" aria-selected="false" aria-controls="section-15x21" id="tab-15x21" data-size="15x21" data-price="0.75">
+        15x21 cm (€0,75)
+      </div>
+      <div class="tab" role="tab" tabindex="-1" aria-selected="false" aria-controls="section-20x30" id="tab-20x30" data-size="20x30" data-price="1.00">
+        20x30 cm (€1,00)
+      </div>
+    </div>
+
+    <!-- Section 10x15 -->
+    <section id="section-10x15" class="section active" role="tabpanel" tabindex="0" aria-labelledby="tab-10x15" data-size="10x15" data-price="0.50">
+      <h2>Photos 10x15 cm (€0,50/unité)</h2>
+      <div class="thumbnails" aria-label="Galerie de photos 10x15 cm">
+        <div class="thumbnail-container" data-photo-id="10x15-1">
+          <img src="https://via.placeholder.com/100x150?text=10x15+1" alt="Photo tirage 10x15 1" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 10x15 1">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 10x15 1">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="10x15-2">
+          <img src="https://via.placeholder.com/100x150?text=10x15+2" alt="Photo tirage 10x15 2" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 10x15 2">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 10x15 2">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="10x15-3">
+          <img src="https://via.placeholder.com/100x150?text=10x15+3" alt="Photo tirage 10x15 3" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 10x15 3">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 10x15 3">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="10x15-4">
+          <img src="https://via.placeholder.com/100x150?text=10x15+4" alt="Photo tirage 10x15 4" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 10x15 4">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 10x15 4">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="10x15-5">
+          <img src="https://via.placeholder.com/100x150?text=10x15+5" alt="Photo tirage 10x15 5" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 10x15 5">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 10x15 5">+</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 15x21 -->
+    <section id="section-15x21" class="section" role="tabpanel" tabindex="0" aria-labelledby="tab-15x21" data-size="15x21" data-price="0.75">
+      <h2>Photos 15x21 cm (€0,75/unité)</h2>
+      <div class="thumbnails" aria-label="Galerie de photos 15x21 cm">
+        <div class="thumbnail-container" data-photo-id="15x21-1">
+          <img src="https://via.placeholder.com/100x140?text=15x21+1" alt="Photo tirage 15x21 1" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 15x21 1">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 15x21 1">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="15x21-2">
+          <img src="https://via.placeholder.com/100x140?text=15x21+2" alt="Photo tirage 15x21 2" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 15x21 2">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 15x21 2">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="15x21-3">
+          <img src="https://via.placeholder.com/100x140?text=15x21+3" alt="Photo tirage 15x21 3" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 15x21 3">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 15x21 3">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="15x21-4">
+          <img src="https://via.placeholder.com/100x140?text=15x21+4" alt="Photo tirage 15x21 4" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 15x21 4">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 15x21 4">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="15x21-5">
+          <img src="https://via.placeholder.com/100x140?text=15x21+5" alt="Photo tirage 15x21 5" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 15x21 5">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 15x21 5">+</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Section 20x30 -->
+    <section id="section-20x30" class="section" role="tabpanel" tabindex="0" aria-labelledby="tab-20x30" data-size="20x30" data-price="1.00">
+      <h2>Photos 20x30 cm (€1,00/unité)</h2>
+      <div class="thumbnails" aria-label="Galerie de photos 20x30 cm">
+        <div class="thumbnail-container" data-photo-id="20x30-1">
+          <img src="https://via.placeholder.com/100x150?text=20x30+1" alt="Photo tirage 20x30 1" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 20x30 1">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 20x30 1">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="20x30-2">
+          <img src="https://via.placeholder.com/100x150?text=20x30+2" alt="Photo tirage 20x30 2" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 20x30 2">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 20x30 2">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="20x30-3">
+          <img src="https://via.placeholder.com/100x150?text=20x30+3" alt="Photo tirage 20x30 3" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 20x30 3">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 20x30 3">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="20x30-4">
+          <img src="https://via.placeholder.com/100x150?text=20x30+4" alt="Photo tirage 20x30 4" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 20x30 4">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 20x30 4">+</button>
+          </div>
+        </div>
+        <div class="thumbnail-container" data-photo-id="20x30-5">
+          <img src="https://via.placeholder.com/100x150?text=20x30+5" alt="Photo tirage 20x30 5" class="thumbnail" />
+          <div class="quantity-controls">
+            <button class="btn-minus" aria-label="Réduire quantité photo 20x30 5">−</button>
+            <div class="quantity-display" aria-live="polite" aria-atomic="true">0</div>
+            <button class="btn-plus" aria-label="Augmenter quantité photo 20x30 5">+</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="total" id="totalAmount">Montant total : 0,00 €</div>
+    <button id="validateBtn">Valider la commande</button>
+  </div>
+
+<script>
+  // Prices per photo size
+  const prices = {
+    '10x15': 0.50,
+    '15x21': 0.75,
+    '20x30': 1.00
+  };
+
+  // Tabs elements
+  const tabs = document.querySelectorAll('.tab');
+  const sections = document.querySelectorAll('.section');
+
+  tabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      const size = tab.getAttribute('data-size');
+      // Update tab active state
+      tabs.forEach(t => {
+        t.classList.toggle('active', t === tab);
+        t.setAttribute('aria-selected', t === tab ? 'true' : 'false');
+        t.tabIndex = t === tab ? 0 : -1;
+      });
+      // Show related section only
+      sections.forEach(section => {
+        section.classList.toggle('active', section.getAttribute('data-size') === size);
+        if(section.getAttribute('data-size') === size) {
+          section.focus();
+        }
+      });
+    });
+  });
+
+  // Select all thumbnail containers
+  const thumbnailContainers = document.querySelectorAll('.thumbnail-container');
+
+  // Function to get size from closest section parent
+  function getSizeFromElement(el) {
+    const section = el.closest('section[data-size]');
+    return section ? section.getAttribute('data-size') : null;
+  }
+
+  // Calculate total amount
+  function calculateTotal() {
+    let total = 0;
+    thumbnailContainers.forEach(container => {
+      const size = getSizeFromElement(container);
+      const price = prices[size] || 0;
+      const qtyDisplay = container.querySelector('.quantity-display');
+      const qty = parseInt(qtyDisplay.textContent) || 0;
+      total += qty * price;
+    });
+    const totalAmountEl = document.getElementById('totalAmount');
+    totalAmountEl.textContent = 'Montant total : ' + total.toFixed(2).replace('.', ',') + ' €';
+  }
+
+  // Initialize buttons event listeners
+  thumbnailContainers.forEach(container => {
+    const btnMinus = container.querySelector('.btn-minus');
+    const btnPlus = container.querySelector('.btn-plus');
+    const qtyDisplay = container.querySelector('.quantity-display');
+
+    btnMinus.addEventListener('click', () => {
+      let currentQty = parseInt(qtyDisplay.textContent) || 0;
+      if (currentQty > 0) {
+        currentQty--;
+        qtyDisplay.textContent = currentQty;
+        calculateTotal();
+      }
+    });
+
+    btnPlus.addEventListener('click', () => {
+      let currentQty = parseInt(qtyDisplay.textContent) || 0;
+      currentQty++;
+      qtyDisplay.textContent = currentQty;
+      calculateTotal();
+    });
+  });
+
+  // Validate order button
+  document.getElementById('validateBtn').addEventListener('click', () => {
+    let orderSummary = 'Résumé de la commande :\n';
+    let hasOrder = false;
+
+    thumbnailContainers.forEach(container => {
+      const size = getSizeFromElement(container);
+      const photoId = container.getAttribute('data-photo-id');
+      const qty = parseInt(container.querySelector('.quantity-display').textContent) || 0;
+      if (qty > 0) {
+        orderSummary += `- ${qty} photo(s) ${photoId.replace('-', ' ')} (${size} cm)\n`;
+        hasOrder = true;
+      }
+    });
+
+    if (!hasOrder) {
+      alert('Veuillez sélectionner au moins une quantité pour valider la commande.');
+      return;
+    }
+
+    const totalAmountEl = document.getElementById('totalAmount');
+    orderSummary += '\n' + totalAmountEl.textContent;
+    alert(orderSummary);
+  });
+
+  // Initialize total amount
+  calculateTotal();
+</script>
+</body>
+</html>
+

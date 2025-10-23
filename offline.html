@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Détection Hors Ligne & Variable Globale</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
+            color: #fff;
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .offline-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #ff4d4d;
+            color: white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            box-shadow: 0 0 15px rgba(255, 77, 77, 0.6);
+            opacity: 0;
+            transform: translateY(-100px);
+            transition: all 0.5s ease;
+            z-index: 10;
+        }
+
+        .offline .offline-indicator {
+            opacity: 1;
+            transform: translateY(0);
+            animation: pulse 1.5s infinite;
+        }
+
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(255, 77, 77, 0.7);
+            }
+
+            70% {
+                box-shadow: 0 0 0 15px rgba(255, 77, 77, 0);
+            }
+
+            100% {
+                box-shadow: 0 0 0 0 rgba(255, 77, 77, 0);
+            }
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            background: linear-gradient(to right, #4facfe, #00f2fe);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.8;
+            margin-bottom: 20px;
+        }
+
+        .status-card {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .status-content {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            margin-bottom: 20px;
+            width: 100%;
+            justify-content: center;
+        }
+
+        .status-icon {
+            font-size: 3rem;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .online .status-icon {
+            background: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .offline .status-icon {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .status-text {
+            text-align: center;
+        }
+
+        .status-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .status-description {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .info-card {
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 15px;
+            padding: 20px;
+            transition: transform 0.3s ease;
+        }
+
+        .info-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.12);
+        }
+
+        .info-card h3 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            color: #3498db;
+            font-size: 1.3rem;
+        }
+
+        .variable-display {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 1rem;
+            margin-top: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            overflow-x: auto;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 20px;
+        }
+
+        button {
+            background: linear-gradient(to right, #3498db, #2c3e50);
+            color: white;
+            border: none;
+            padding: 14px 28px;
+            border-radius: 50px;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+
+        button:active {
+            transform: translateY(1px);
+        }
+
+        .simulate-offline {
+            background: linear-gradient(to right, #e74c3c, #c0392b);
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            font-size: 0.9rem;
+            opacity: 0.7;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .status-content {
+                flex-direction: column;
+                text-align: center;
+            }
+
+            .controls {
+                flex-direction: column;
+            }
+
+            button {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <!-- Indicateur hors ligne -->
+        <div class="offline-indicator">
+            <i class="fas fa-plug"></i>
+        </div>
+
+        <header>
+            <h1><i class="fas fa-network-wired"></i> Surveillance de Connexion</h1>
+            <p class="subtitle">Détection de l'état de connexion et test de variable globale</p>
+        </header>
+
+        <div class="status-card">
+            <div class="status-content">
+                <div class="status-icon">
+                    <i class="fas fa-wifi"></i>
+                </div>
+                <div class="status-text">
+                    <div class="status-title" id="connectionStatus">Connecté</div>
+                    <div class="status-description" id="statusDetails">Votre appareil est connecté à Internet</div>
+                </div>
+            </div>
+
+            <div class="info-grid">
+                <div class="info-card">
+                    <h3><i class="fas fa-globe"></i> État Réseau</h3>
+                    <p>Cette application détecte automatiquement votre état de connexion et affiche un indicateur
+                        lorsque vous êtes hors ligne.</p>
+                    <p>L'indicateur apparaît en haut à droite lorsque la connexion est perdue.</p>
+                </div>
+
+                <div class="info-card">
+                    <h3><i class="fas fa-code"></i> Variable Globale</h3>
+                    <p>L'application utilise une variable globale <code>appConfig</code> qui peut être modifiée
+                        dynamiquement.</p>
+                    <p>Contenu actuel de la variable :</p>
+                    <div class="variable-display" id="globalVarDisplay">
+                        // Chargement...
+                    </div>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="updateVarBtn">
+                    <i class="fas fa-sync-alt"></i> Modifier la variable
+                </button>
+                <button id="checkVarBtn">
+                    <i class="fas fa-check-circle"></i> Tester la variable
+                </button>
+                <button id="simulateOfflineBtn" class="simulate-offline">
+                    <i class="fas fa-plug"></i> Simuler hors ligne
+                </button>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Application de démonstration | Détection hors ligne avec indicateur visuel</p>
+            <p>La variable globale est mise à jour en temps réel</p>
+        </div>
+    </div>
+
+    <script>
+        // ====================
+        // VARIABLE GLOBALE
+        // ====================
+        // Définition de notre variable globale
+        window.appConfig = {
+            appName: "Connexion Monitor Pro",
+            version: "1.2.0",
+            debugMode: false,
+            lastUpdate: new Date().toLocaleString(),
+            features: {
+                offlineDetection: true,
+                globalVar: true
+            },
+            connection: {
+                lastOnline: new Date().toLocaleTimeString(),
+                lastOffline: null
+            }
+        };
+
+        // ====================
+        // ÉLÉMENTS DOM
+        // ====================
+        const connectionStatus = document.getElementById('connectionStatus');
+        const statusDetails = document.getElementById('statusDetails');
+        const globalVarDisplay = document.getElementById('globalVarDisplay');
+        const updateVarBtn = document.getElementById('updateVarBtn');
+        const checkVarBtn = document.getElementById('checkVarBtn');
+        const simulateOfflineBtn = document.getElementById('simulateOfflineBtn');
+        const container = document.querySelector('.container');
+        const offlineIndicator = document.querySelector('.offline-indicator');
+
+        // ====================
+        // FONCTIONS UTILITAIRES
+        // ====================
+        function updateConnectionStatus() {
+            const isOnline = navigator.onLine;
+
+            if (isOnline) {
+                container.classList.remove('offline');
+                container.classList.add('online');
+                connectionStatus.textContent = "Connecté";
+                connectionStatus.style.color = "#2ecc71";
+                statusDetails.textContent = `Connexion internet active - Dernière vérification: ${new Date().toLocaleTimeString()}`;
+
+                // Mettre à jour le timestamp de dernière connexion
+                window.appConfig.connection.lastOnline = new Date().toLocaleTimeString();
+            } else {
+                container.classList.remove('online');
+                container.classList.add('offline');
+                connectionStatus.textContent = "Hors ligne";
+                connectionStatus.style.color = "#e74c3c";
+                statusDetails.textContent = "Connexion internet perdue - Fonctionnalités limitées";
+
+                // Mettre à jour le timestamp de dernière déconnexion
+                window.appConfig.connection.lastOffline = new Date().toLocaleTimeString();
+            }
+
+            updateGlobalVarDisplay();
+            return isOnline;
+        }
+
+        function updateGlobalVarDisplay() {
+            // Affichage formaté de l'objet global
+            globalVarDisplay.textContent = JSON.stringify(window.appConfig, null, 2);
+        }
+
+        function simulateOffline() {
+            // Basculer temporairement en mode hors ligne
+            container.classList.remove('online');
+            container.classList.add('offline');
+            connectionStatus.textContent = "Hors ligne (simulé)";
+            connectionStatus.style.color = "#e74c3c";
+            statusDetails.textContent = "Mode simulation activé - Retour à la normale dans 5 secondes";
+
+            // Retour à la normale après 5 secondes
+            setTimeout(() => {
+                updateConnectionStatus();
+            }, 5000);
+        }
+
+        // ====================
+        // INITIALISATION
+        // ====================
+        function init() {
+            // Afficher l'état initial
+            updateConnectionStatus();
+            updateGlobalVarDisplay();
+
+            // Événements de connexion/déconnexion
+            window.addEventListener("online", updateConnectionStatus);
+            window.addEventListener("offline", updateConnectionStatus);
+
+            // Tester périodiquement la connexion
+            setInterval(() => {
+                updateConnectionStatus();
+
+                // Simuler un changement de variable globale occasionnel
+                if (Math.random() > 0.7) {
+                    window.appConfig.debugMode = !window.appConfig.debugMode;
+                    window.appConfig.lastUpdate = new Date().toLocaleString();
+                    updateGlobalVarDisplay();
+                }
+            }, 10000);
+        }
+
+        // ====================
+        // ÉVÉNEMENTS
+        // ====================
+        updateVarBtn.addEventListener("click", () => {
+            // Modification de la variable globale
+            window.appConfig.debugMode = !window.appConfig.debugMode;
+            window.appConfig.lastUpdate = new Date().toLocaleString();
+
+            // Ajouter un événement aléatoire
+            const events = ["Mise à jour", "Modification config", "Changement paramètre"];
+            window.appConfig.lastEvent = events[Math.floor(Math.random() * events.length)];
+
+            updateGlobalVarDisplay();
+        });
+
+        checkVarBtn.addEventListener("click", () => {
+            // Tester la variable globale
+            const testResult = window.appConfig.debugMode ?
+                "Mode debug ACTIVÉ" : "Mode debug DÉSACTIVÉ";
+
+            // Afficher visuellement le résultat
+            checkVarBtn.innerHTML = `<i class="fas fa-check-circle"></i> ${testResult}`;
+            checkVarBtn.style.background = window.appConfig.debugMode ?
+                "linear-gradient(to right, #f39c12, #d35400)" :
+                "linear-gradient(to right, #2ecc71, #27ae60)";
+
+            // Réinitialiser après 2 secondes
+            setTimeout(() => {
+                checkVarBtn.innerHTML = '<i class="fas fa-check-circle"></i> Tester la variable';
+                checkVarBtn.style.background = "linear-gradient(to right, #3498db, #2c3e50)";
+            }, 2000);
+        });
+
+        simulateOfflineBtn.addEventListener("click", simulateOffline);
+
+        // Démarrer l'application
+        window.addEventListener("load", init);
+    </script>
+</body>
+
+</html>

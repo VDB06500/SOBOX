@@ -1,0 +1,672 @@
+/* Reset et base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* -------------------------------------- Container -------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+.app-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* ----------------------------------------- Pages --------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+.page {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 20px;
+    background-color: white;
+    transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s ease;
+    overflow-y: auto;
+    display: none;
+}
+
+.page.active {
+    display: block;
+    transform: translateX(0);
+    opacity: 1;
+    z-index: 10;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* ------------------------------------ Splash Screen ------------------------------------ */
+/* --------------------------------------------------------------------------------------- */
+
+#splash-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    color: #2F3B90;
+    text-align: center;
+}
+
+.splash-logo {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 30px;
+    animation: pulse 2s infinite;
+}
+
+.splash-title {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.splash-subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* --------------------------------- Liste des évenements  ------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+/* Layout */
+.app-container {
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+}
+
+.page.active {
+    display: block;
+    transform: translateX(0);
+    opacity: 1;
+    z-index: 10;
+    margin-top: 30px;
+}
+
+/* Header */
+.event-header {
+    position: sticky;
+    top: 0;
+    background: white;
+    padding: 1rem;
+    z-index: 100;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 1.5rem;
+    cursor: pointer;
+    color: var(--medium-gray);
+}
+
+.event-title {
+    flex: 1;
+    text-align: center;
+}
+
+/* Style des cartes d'événements */
+.event-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    /* padding: 0 20px; */
+    margin-top: 15px;
+}
+
+.event-card {
+    padding: 1rem 1rem;
+    width: 100%;
+    /* margin-bottom: 1rem; */
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.event-card h2 {
+    margin: 0.5rem 0;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.event-card:active {
+    transform: translateY(0);
+}
+
+.event-details {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.5rem 0;
+}
+
+.event-date,
+.event-location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.event-date span,
+.event-location span {
+    font-size: 1.2rem;
+}
+
+/* Style du bouton "Rejoindre un événement" */
+.join-button {
+    display: block;
+    width: 100%;
+    /* max-width: 300px; */
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+}
+
+.join-button:hover {
+    background-color: #0056b3;
+}
+
+/* Image en pleine largeur */
+.full-width-image {
+    width: 100%;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.full-width-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* ------------------------------------ xxxxxxxxxxxxxx ----------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+/* Gallery */
+.gallery-container {
+    padding: 0.5rem;
+}
+
+#gallery {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 0.5rem;
+    will-change: transform;
+}
+
+.gallery-item {
+    aspect-ratio: 1;
+    overflow: hidden;
+    border-radius: 0.5rem;
+    opacity: 0;
+    transform: translateY(20px);
+    transition: var(--transition);
+}
+
+.gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: var(--transition);
+}
+
+.gallery-item.loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+.gallery-item:hover .gallery-img {
+    transform: scale(1.05);
+}
+
+/* Event Cards */
+
+.event-card {
+    padding: 1rem 1rem;
+    width: 100%;
+    /* margin-bottom: 1rem; */
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* -------------------------------------- Navigation ------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+/* Navigation */
+#main-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    background: white;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    padding: 0.5rem 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--medium-gray);
+    text-decoration: none;
+    font-size: 0.75rem;
+}
+
+.nav-item i {
+    font-size: 1.25rem;
+    margin-bottom: 0.25rem;
+}
+
+.nav-item.active {
+    color: var(--primary-color);
+}
+
+/* Buttons */
+.button {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    text-align: center;
+}
+
+.button:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* ---------------------------------------- Modale --------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+/* Modal */
+.modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.modal.active {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 1rem;
+    width: 90%;
+    max-width: 400px;
+    padding: 1.5rem;
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+    }
+
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (min-width: 768px) {
+    #gallery {
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 1rem;
+    }
+
+    .event-list {
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    }
+
+    .nav-item {
+        font-size: 0.85rem;
+    }
+
+    .nav-item i {
+        font-size: 1.5rem;
+    }
+}
+
+/* Performance optimizations */
+img {
+    content-visibility: auto;
+}
+
+/* Sentinel (for lazy loading) */
+#gallerySentinel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 1px;
+    height: 1px;
+    pointer-events: none;
+    opacity: 0;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* --------------------------------- Barre de navigation --------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+.page:not(.active) {
+    display: none;
+}
+
+#main-nav {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    background: white;
+    padding: 8px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    transition: all 0.3s ease;
+    width: 100%;
+    padding: 5px 0;
+}
+
+.nav-item.active {
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+.nav-item i {
+    font-size: 22px;
+    margin-bottom: 3px;
+}
+
+.nav-item span {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #666;
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+
+.nav-item i {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+#main-nav .nav-item.active i {
+    color: #4285f4;
+    /* Couleur bleue par exemple */
+}
+
+#main-nav .nav-item.active span {
+    color: #4285f4;
+    /* Optionnel : même couleur pour le texte */
+}
+
+/* Titres des pages */
+.page-title {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.event-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    /* Priorité maximale */
+    will-change: transform;
+    /* Optimisation performance */
+    transform: translateZ(0);
+    /* Crée un layer GPU */
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* ----------------------------------------- Header -------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+/* Garantir que le contenu principal ne passe pas sous le header */
+.main-content {
+    margin-top: 60px;
+    /* Hauteur du header */
+}
+
+.header-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    position: relative;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+    z-index: 1;
+}
+
+.event-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 60%;
+}
+
+.event-title h1 {
+    font-size: 18px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-date {
+    font-size: 12px;
+    color: #666;
+    margin: 2px 0 0;
+}
+
+.back-button i {
+    margin-right: 5px;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* ----------------------------------------- QR CODE ------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+.cta-section {
+    background: white;
+    padding: 2rem 1.5rem;
+    margin-bottom: 2rem;
+    max-width: 400px;
+    width: 100%;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.cta-section h1 {
+    color: #007BFF;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* QR Code Container */
+.qr-container {
+    position: relative;
+    margin: 1.5rem auto;
+    width: 200px;
+    height: 200px;
+    background: white;
+    border-radius: 16px;
+    padding: 1rem;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 2px dashed var(--primary);
+    animation: pulse 2s infinite;
+}
+
+.qr-code {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* Instructions */
+/* .steps {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin: 2rem 0;
+    text-align: left;
+    max-width: 400px;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+} */
+
+.step-number {
+    background: #007BFF;
+    color: white;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+.step-text {
+    font-size: 0.95rem;
+}

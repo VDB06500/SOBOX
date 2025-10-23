@@ -1,0 +1,536 @@
+/* Reset et base */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* -------------------------------------- Container -------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+.app-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* ----------------------------------------- Pages --------------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+.page {
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    padding: 20px;
+    background-color: white;
+    transition: transform 0.5s cubic-bezier(0.4, 0.0, 0.2, 1), opacity 0.3s ease;
+    overflow-y: auto;
+    display: none;
+}
+
+.page.active {
+    display: block;
+    transform: translateX(0);
+    opacity: 1;
+    z-index: 10;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* ------------------------------------ Splash Screen ------------------------------------ */
+/* --------------------------------------------------------------------------------------- */
+
+#splash-screen {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    color: #2F3B90;
+    text-align: center;
+}
+
+.splash-logo {
+    width: 150px;
+    height: 150px;
+    margin-bottom: 30px;
+    animation: pulse 2s infinite;
+}
+
+.splash-title {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.splash-subtitle {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+    }
+
+    50% {
+        transform: scale(1.1);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* -------------------------------- Liste des événements --------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+/* Galerie photo */
+/* Conteneur principal */
+.gallery-container {
+    width: 100%;
+    overflow: hidden;
+    /* Empêche tout débordement */
+    padding: 0 10px;
+    /* Petit padding sur les côtés */
+    box-sizing: border-box;
+    /* Inclut le padding dans la largeur */
+}
+
+/* Ajoutez ceci à votre CSS */
+#gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    padding: 16px;
+    position: relative;
+    /* Important pour le sentinel */
+}
+
+
+
+#gallery {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    position: relative;
+    /* Important pour le positionnement du sentinel */
+    overflow-anchor: none;
+    /* Empêche le scroll automatique */
+}
+
+.gallery-item {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+#gallerySentinel {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    width: 1px;
+    /* Réduisez la taille */
+    pointer-events: none;
+    opacity: 0;
+    /* Rendez-le invisible */
+}
+
+.gallery-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    transition: transform 0.3s ease;
+}
+
+.gallery-item:hover .gallery-img {
+    transform: scale(1.05);
+}
+
+/* Style des cartes d'événements */
+.event-list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 20px;
+    /* padding: 0 20px; */
+    margin-top: 60px;
+}
+
+.event-card {
+    padding: 1rem 1rem;
+    width: 100%;
+    /* margin-bottom: 1rem; */
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.event-card h2 {
+    margin: 0.5rem 0;
+}
+
+.event-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.event-card:active {
+    transform: translateY(0);
+}
+
+.event-details {
+    display: flex;
+    justify-content: space-between;
+    margin: 0.5rem 0;
+}
+
+.event-date,
+.event-location {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.event-date span,
+.event-location span {
+    font-size: 1.2rem;
+}
+
+/* Style du bouton "Rejoindre un événement" */
+.join-button {
+    display: block;
+    width: 100%;
+    /* max-width: 300px; */
+    margin: 20px auto;
+    padding: 15px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    font-size: 1em;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+}
+
+.join-button:hover {
+    background-color: #0056b3;
+}
+
+/* Image en pleine largeur */
+.full-width-image {
+    width: 100%;
+    overflow: hidden;
+    margin-top: 20px;
+}
+
+.full-width-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+}
+
+
+/* ------------------------------------------------------------------------------------------------------
+        /*  FENETRE MODALE
+        /* ------------------------------------------------------------------------------------------------------
+
+        /* Style du modal */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    width: 80%;
+    text-align: center;
+}
+
+.modal-content h2 {
+    margin-top: 0;
+}
+
+.modal-content h3 {
+    margin: 10px 0;
+}
+
+.modal-content button {
+    margin: 10px 0;
+}
+
+.modal-content input {
+    width: 90%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    text-transform: uppercase;
+}
+
+.modal-content button {
+    padding: 10px 20px;
+    background-color: #007BFF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.modal-content button:hover {
+    background-color: #0056b3;
+}
+
+.cancel-button {
+    background-color: #f44336;
+}
+
+.cancel-button:hover {
+    background-color: #d32f2f;
+}
+
+/* ------------------------------------------------------------------------------------------------------
+/*  BOUTON RESET
+/* ------------------------------------------------------------------------------------------------------
+
+        /* Style du bouton de réinitialisation */
+.reset-button {
+    position: absolute;
+    right: 15px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: #ff4444;
+    font-size: 1.2rem;
+    cursor: pointer;
+    padding: 5px;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.reset-button:hover {
+    background-color: rgba(255, 68, 68, 0.1);
+}
+
+#confirmResetButton {
+    background-color: #ff4444;
+    color: white;
+}
+
+/* --------------------------------------------------------------------------------------- */
+/* --------------------------------- Barre de navigation --------------------------------- */
+/* --------------------------------------------------------------------------------------- */
+
+.page:not(.active) {
+    display: none;
+}
+
+#main-nav {
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    background: white;
+    padding: 8px 0;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    z-index: 100;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: #aaa;
+    transition: all 0.3s ease;
+    width: 100%;
+    padding: 5px 0;
+}
+
+.nav-item.active {
+    color: #fff;
+    transform: translateY(-3px);
+}
+
+.nav-item i {
+    font-size: 22px;
+    margin-bottom: 3px;
+}
+
+.nav-item span {
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.nav-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: white;
+    display: flex;
+    justify-content: space-around;
+    padding: 10px 0;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 100;
+}
+
+.nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: #666;
+    text-decoration: none;
+    font-size: 0.8rem;
+}
+
+.nav-item i {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+
+#main-nav .nav-item.active i {
+    color: #4285f4;
+    /* Couleur bleue par exemple */
+}
+
+#main-nav .nav-item.active span {
+    color: #4285f4;
+    /* Optionnel : même couleur pour le texte */
+}
+
+/* Titres des pages */
+.page-title {
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+.event-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 40px;
+    background: #ffffff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    /* Priorité maximale */
+    will-change: transform;
+    /* Optimisation performance */
+    transform: translateZ(0);
+    /* Crée un layer GPU */
+}
+
+/* Garantir que le contenu principal ne passe pas sous le header */
+.main-content {
+    margin-top: 60px;
+    /* Hauteur du header */
+}
+
+.header-content {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 15px;
+    position: relative;
+}
+
+.back-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: #333;
+    z-index: 1;
+}
+
+.event-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    text-align: center;
+    width: 60%;
+}
+
+.event-title h1 {
+    font-size: 18px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.event-date {
+    font-size: 12px;
+    color: #666;
+    margin: 2px 0 0;
+}
+
+.back-button i {
+    margin-right: 5px;
+}
+
+
+/* Pour les écrans plus larges */
+@media (min-width: 768px) {
+    .app-container {
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .page {
+        border-radius: 10px;
+    }
+
+    .gallery {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+.error-message {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 15px;
+    background: #ff4444;
+    color: white;
+    border-radius: 5px;
+    display: none;
+    z-index: 1000;
+    max-width: 300px;
+    word-wrap: break-word;
+}

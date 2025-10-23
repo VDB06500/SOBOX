@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"/>
+    <title>Console d'administration des événements</title>
+    <style>
+        /* Reset and base */
+        * {
+            box-sizing: border-box;
+        }
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #2c3e50, #3498db);
+            color: #ecf0f1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding: 1rem;
+        }
+        h1 {
+            margin: 0 0 1rem 0;
+            font-weight: 700;
+            font-size: 1.5rem;
+            text-align: center;
+            text-shadow: 0 0 10px rgba(0,0,0,0.3);
+        }
+        #container {
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 1rem;
+            width: 100%;
+            max-width: 350px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            flex-grow: 1;
+            max-height: 600px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin-bottom: 0.25rem;
+            user-select: none;
+        }
+        select {
+            width: 100%;
+            padding: 0.5em;
+            border-radius: 8px;
+            border: none;
+            font-size: 1rem;
+            outline: none;
+            background: #2980b9;
+            color: white;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+        }
+        select:focus {
+            box-shadow: 0 0 10px #8e44ad;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 1rem;
+            user-select: none;
+        }
+        .stat-item {
+            text-align: center;
+            flex: 1;
+        }
+        .stat-label {
+            font-weight: 400;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+        .stat-value {
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin-top: 0.1rem;
+        }
+        #chart-container {
+            flex-grow: 1;
+            position: relative;
+            min-height: 250px;
+        }
+
+        @media (max-width: 350px) {
+            #container {
+                max-width: 100vw;
+                border-radius: 0;
+                padding: 0.5rem 1rem;
+            }
+            h1 {
+                font-size: 1.2rem;
+            }
+            .stat-value {
+                font-size: 1.1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Console d'administration</h1>
+    <div id="container" role="main" aria-label="Console d'administration des événements">
+        <div>
+            <label for="eventSelect">Choisissez un événement :</label>
+            <select id="eventSelect" aria-describedby="eventDesc">
+                <!-- options will be added by JS -->
+            </select>
+            <div id="eventDesc" class="visually-hidden">Sélectionnez un événement pour voir les statistiques.</div>
+        </div>
+
+        <div class="stats" aria-live="polite" aria-atomic="true">
+            <div class="stat-item">
+                <div class="stat-label">Utilisateurs</div>
+                <div id="userCount" class="stat-value">-</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Connexions totales</div>
+                <div id="totalConnections" class="stat-value">-</div>
+            </div>
+        </div>
+
+        <div id="chart-container">
+            <canvas id="connectionsHistogram" aria-label="Histogramme des connexions par quart d'heure" role="img"></canvas>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        (() => {
+            // Sample data for events
+            const eventsData = {
+                "event1": {
+                    name: "Conférence Tech 2024",
+                    users: 120,
+                    totalConnections: 480,
+                    connectionsByQuarterHour: {
+                        // timestamps are quarter-hour in minutes from 0 to 24h (0,15,30,...)
+                        // For simplicity index 0 is midnight, each key is the quarter-hour index
+                        // For example: 0 => 10 connections, 1 => 15, etc.
+                        0: 5, 1: 10, 2: 15, 3: 20, 4: 18, 5: 14, 6: 12, 7: 16,
+                        8: 20, 9: 30, 10: 40, 11: 35, 12: 41, 13: 38, 14: 35, 15: 30,
+                        16: 25, 17: 22, 18: 20, 19: 10, 20: 8, 21: 6, 22: 4, 23: 3, 24: 0
+                    }
+                },
+                "event2": {
+                    name: "Atelier Développement Web",
+                    users: 45,
+                    totalConnections: 180,
+                    connectionsByQuarterHour: {
+                        0: 2, 1: 5, 2: 10, 3: 8, 4: 5, 5: 5, 6: 6, 7: 10,
+                        8: 12, 9: 18, 10: 20, 11: 18, 12: 15, 13: 10, 14: 8, 15: 7,
+                        16: 5, 17: 5, 18: 7, 19: 4, 20: 3, 21: 2, 22: 1, 23: 0, 24: 0
+                    }
+                },
+                "event3": {
+                    name: "Webinar Intelligence Artificielle",
+                    users: 200,
+                    totalConnections: 850,
+                    connectionsByQuarterHour: {
+                        0: 10, 1: 25, 2: 50, 3: 70, 4: 80, 5: 75, 6: 70, 7: 60,
+                        8: 50, 9: 45, 10: 40, 11: 55, 12: 75, 13: 80, 14: 85, 15: 90,
+                        16: 80, 17: 60, 18: 50, 19: 30, 20: 20, 21: 10, 22: 5, 23: 3, 24: 2
+                    }
+                }
+            };
+
+            const eventSelect = document.getElementById('eventSelect');
+            const userCountEl = document.getElementById('userCount');
+            const totalConnectionsEl = document.getElementById('totalConnections');
+            const ctx = document.getElementById('connectionsHistogram').getContext('2d');
+
+            // Format quarter hour index to HH:mm string
+            function quarterHourLabel(index) {
+                const h = Math.floor(index / 4);
+                const m = (index % 4) * 15;
+                return h.toString().padStart(2,'0') + ':' + m.toString().padStart(2,'0');
+            }
+
+            // Initialize dropdown options
+            function initDropdown() {
+                for (const eventId in eventsData) {
+                    const option = document.createElement('option');
+                    option.value = eventId;
+                    option.textContent = eventsData[eventId].name;
+                    eventSelect.appendChild(option);
+                }
+            }
+
+            // Prepare chart data
+            function prepareChartData(connectionData) {
+                // Since keys might not be continuous, get max index and fill zeros if missing
+                const maxIndex = 24; // 24 quarter-hours (6h) or 0-24 for a full day? 0-24 means 25 points which represent 0:00 to 6:00?
+                // Actually 24 quarter-hours = 6 hours. To represent a full day (24h) by 15 min increments = 24*4 = 96 quarters
+                // Let's for this demo just show up to 24 quarters = 6h data (change maxIndex to 96 for full day)
+                // I'll use 96 (24*4) quarter-hours for a full day all 0 to 95 indexes
+                // But sample data is from 0 to 24 - limited - let's keep it 0-24 in sample data and show up to 24 quarter-hour labels.
+
+                // We'll just take maxIndex defined above for now to be 24
+                const labels = [];
+                const dataPoints = [];
+                for (let i = 0; i <= maxIndex; i++) {
+                    labels.push(quarterHourLabel(i));
+                    dataPoints.push(connectionData[i] || 0);
+                }
+                return {labels, dataPoints};
+            }
+
+            let chart = null;
+
+            function updateUI(eventId) {
+                if (!eventsData[eventId]) return;
+                const event = eventsData[eventId];
+                userCountEl.textContent = event.users;
+                totalConnectionsEl.textContent = event.totalConnections;
+
+                const {labels, dataPoints} = prepareChartData(event.connectionsByQuarterHour);
+
+                if (chart) {
+                    chart.data.labels = labels;
+                    chart.data.datasets[0].data = dataPoints;
+                    chart.update();
+                } else {
+                    chart = new Chart(ctx, {
+                        type: 'bar',
+                        data: {
+                            labels: labels,
+                            datasets: [{
+                                label: 'Connexions par quart d\'heure',
+                                data: dataPoints,
+                                backgroundColor: 'rgba(142, 68, 173, 0.7)',
+                                borderColor: 'rgba(142, 68, 173, 1)',
+                                borderWidth: 1,
+                                borderRadius: 3,
+                                barPercentage: 0.8,
+                                categoryPercentage: 0.8
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            scales: {
+                                x: {
+                                    ticks: {
+                                        maxRotation: 90,
+                                        minRotation: 45,
+                                        maxTicksLimit: 10,
+                                        color: '#ecf0f1',
+                                        font: {
+                                            size: 10
+                                        },
+                                        autoSkip: true
+                                    },
+                                    grid: {
+                                        color: 'rgba(255,255,255,0.1)'
+                                    }
+                                },
+                                y: {
+                                    beginAtZero: true,
+                                    ticks: {
+                                        color: '#ecf0f1',
+                                        font: {
+                                            size: 12
+                                        },
+                                    },
+                                    grid: {
+                                        color: 'rgba(255,255,255,0.2)'
+                                    }
+                                }
+                            },
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#ecf0f1',
+                                        font: {
+                                            size: 12,
+                                            weight: 'bold'
+                                        }
+                                    }
+                                },
+                                tooltip: {
+                                    backgroundColor: '#8e44ad',
+                                    titleFont: {weight: 'bold'},
+                                    bodyFont: {size: 14},
+                                    cornerRadius: 4
+                                }
+                            }
+                        }
+                    });
+                }
+            }
+
+            eventSelect.addEventListener('change', () => {
+                updateUI(eventSelect.value);
+            });
+
+            // Initialize
+            initDropdown();
+
+            // Select first event by default
+            eventSelect.selectedIndex = 0;
+            updateUI(eventSelect.value);
+
+        })();
+    </script>
+</body>
+</html>
+</content>
+</create_file>

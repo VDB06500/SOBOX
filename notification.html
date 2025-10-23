@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notification Demo</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f9ff;
+        }
+
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        h1 {
+            color: #2563eb;
+            margin-top: 0;
+        }
+
+        .card {
+            background: #eff6ff;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:disabled {
+            background: #93c5fd;
+            cursor: not-allowed;
+        }
+
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 6px;
+            display: none;
+        }
+
+        .success {
+            background: #dcfce7;
+            color: #166534;
+            display: block;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #b91c1c;
+            display: block;
+        }
+
+        .notification-option {
+            margin: 15px 0;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            margin: 8px 0;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔔 Système de Notifications</h1>
+
+        <div class="card">
+            <h2>Autorisations</h2>
+            <p>Status des notifications : <span id="permissionStatus">non vérifié</span></p>
+            <button id="requestPermissionBtn">Autoriser les notifications</button>
+            <div id="permissionStatusMsg" class="status"></div>
+        </div>
+
+        <div class="card">
+            <h2>Envoyer une notification</h2>
+            <div class="notification-option">
+                <label for="title">Titre :</label>
+                <input type="text" id="title" placeholder="Notification importante" value="Alerte Eau Stagnante">
+            </div>
+
+            <div class="notification-option">
+                <label for="message">Message :</label>
+                <input type="text" id="message" placeholder="Votre message ici..."
+                    value="Des eaux stagnantes ont été détectées sur votre terrain">
+            </div>
+
+            <button id="sendNotificationBtn" disabled>Envoyer une notification</button>
+            <div id="notificationStatusMsg" class="status"></div>
+        </div>
+    </div>
+
+    <script>
+        // Éléments DOM
+        const requestPermissionBtn = document.getElementById('requestPermissionBtn');
+        const sendNotificationBtn = document.getElementById('sendNotificationBtn');
+        const permissionStatus = document.getElementById('permissionStatus');
+        const permissionStatusMsg = document.getElementById('permissionStatusMsg');
+        const notificationStatusMsg = document.getElementById('notificationStatusMsg');
+
+        // Vérifier l'état initial des permissions
+        function checkNotificationPermission() {
+            if (!('Notification' in window)) {
+                permissionStatus.textContent = 'non supporté';
+                permissionStatusMsg.textContent = 'Votre navigateur ne supporte pas les notifications';
+                permissionStatusMsg.className = 'status error';
+                return;
+            }
+
+            if (Notification.permission === 'granted') {
+                permissionStatus.textContent = 'autorisé';
+                sendNotificationBtn.disabled = false;
+            } else {
+                permissionStatus.textContent = 'non autorisé';
+            }
+        }
+
+        // Demander la permission
+        requestPermissionBtn.addEventListener('click', () => {
+            Notification.requestPermission().then(permission => {
+                if (permission === 'granted') {
+                    permissionStatus.textContent = 'autorisé';
+                    permissionStatusMsg.textContent = 'Merci! Vous pouvez maintenant recevoir des notifications.';
+                    permissionStatusMsg.className = 'status success';
+                    sendNotificationBtn.disabled = false;
+                } else {
+                    permissionStatus.textContent = 'refusé';
+                    permissionStatusMsg.textContent = 'Les notifications ont été bloquées. Vous pouvez modifier cette décision dans les paramètres de votre navigateur.';
+                    permissionStatusMsg.className = 'status error';
+                }
+            });
+        });
+
+        // Envoyer une notification
+        sendNotificationBtn.addEventListener('click', () => {
+            const title = document.getElementById('title').value || 'Notification';
+            const message = document.getElementById('message').value || 'Message de notification';
+
+            // Créer et afficher la notification
+            const notification = new Notification(title, {
+                body: message,
+                icon: 'https://cdn-icons-png.flaticon.com/512/411/411712.png',
+                vibrate: [200, 100, 200]
+            });
+
+            // Gestion des clics sur la notification
+            notification.onclick = () => {
+                alert('Notification cliquée!');
+                window.focus();
+            };
+
+            // Feedback visuel
+            notificationStatusMsg.textContent = 'Notification envoyée avec succès!';
+            notificationStatusMsg.className = 'status success';
+        });
+
+        // Vérifier les permissions au chargement
+        window.addEventListener('load', checkNotificationPermission);
+    </script>
+</body>
+
+</html>
