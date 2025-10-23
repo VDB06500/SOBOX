@@ -59,7 +59,7 @@ try {
         $response["status"] = "ERREUR";
         $response["message"] = "Erreur de connexion à la base de données. Veuillez réessayer plus tard ou contacter le support technique par email : contact@sobox.fr";
         $response["data"] = [];
-        http_response_code(509);
+        http_response_code(500);
         echo json_encode($response);
         exit;
     }
